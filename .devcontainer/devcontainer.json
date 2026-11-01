@@ -1,0 +1,13 @@
+{
+  "name": "Flutter",
+  "image": "ghcr.io/devcontainers-community/devcontainers/flutter:ubuntu",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Dart-Code.flutter",
+        "Dart-Code.dart-code"
+      ]
+    }
+  },
+  "postCreateCommand": "flutter pub get"
+}
