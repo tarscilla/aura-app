@@ -9,5 +9,4 @@
       ]
     }
   },
-  "postCreateCommand": "flutter pub get"
 }
