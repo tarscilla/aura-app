@@ -1,5 +1,10 @@
 import "package:flutter/material.dart";
 import "package:google_fonts/google_fonts.dart";
+import "../services/auth_service.dart";
+import "../theme/app_colors.dart";
+import "../widgets/aura_background.dart";
+import "../widgets/aura_buttons.dart";
+import "../widgets/aura_text_field.dart";
 import "cadastro_page.dart";
 
 class LoginPage extends StatefulWidget {
@@ -12,6 +17,8 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
+  final _auth = AuthService();
+  bool _carregando = false;
 
   @override
   void dispose() {
@@ -20,139 +27,169 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  void _mostrarMensagem(String texto) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(texto)),
+    );
+  }
+
+  Future<void> _entrar() async {
+    final email = _emailController.text.trim();
+    final senha = _senhaController.text;
+
+    if (email.isEmpty || senha.isEmpty) {
+      _mostrarMensagem("Preencha e-mail e senha.");
+      return;
+    }
+
+    setState(() => _carregando = true);
+    final erro = await _auth.entrar(email, senha);
+    if (!mounted) return;
+    setState(() => _carregando = false);
+
+    _mostrarMensagem(erro ?? "Login feito com sucesso!");
+  }
+
+  Future<void> _esqueciSenha() async {
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty) {
+      _mostrarMensagem("Digite seu e-mail no campo acima primeiro.");
+      return;
+    }
+
+    final erro = await _auth.recuperarSenha(email);
+    if (!mounted) return;
+
+    _mostrarMensagem(
+      erro ?? "Enviamos um link de recuperação para o seu e-mail.",
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Column(
-            children: [
-              const SizedBox(height: 40),
-              Image.asset(
-                "assets/images/aura-logo.png",
-                width: 500,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "AURA",
-                style: GoogleFonts.oranienbaum(
-                  fontSize: 60,
-                  color: const Color(0XFFF08A9C),
-                ),
-              ),
-              const SizedBox(height: 40),
-              const Text(
-                "REALIZE SEU LOGIN:",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  hintText: "E-mail",
-                  filled: true,
-                  fillColor: const Color(0XFFFBE8E8),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
+      body: AuraBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Column(
+              children: [
+                const SizedBox(height: 24),
+                Image.asset("assets/images/aura-logo.png", width: 150),
+                Text(
+                  "AURA",
+                  style: GoogleFonts.oranienbaum(
+                    fontSize: 44,
+                    color: AppColors.primaryDark,
                   ),
                 ),
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: _senhaController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: "Senha",
-                  filled: true,
-                  fillColor: const Color(0XFFFBE8E8),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0XFFF08A9C),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                const SizedBox(height: 24),
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Bem-vinda!",
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.title,
+                      ),
                     ),
-                  ),
-                  onPressed: () {},
+                    SizedBox(width: 8),
+                    Icon(Icons.favorite_border, color: AppColors.primaryDark),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  "Faça seu login para continuar.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.subtitle),
+                ),
+                const SizedBox(height: 24),
+                AuraTextField(
+                  controller: _emailController,
+                  hint: "E-mail",
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 14),
+                AuraTextField(
+                  controller: _senhaController,
+                  hint: "Senha",
+                  icon: Icons.lock_outline,
+                  isPassword: true,
+                ),
+                const SizedBox(height: 20),
+                PrimaryButton(
+                  text: "Entrar",
+                  isLoading: _carregando,
+                  onPressed: _entrar,
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: _esqueciSenha,
                   child: const Text(
-                    "Entrar",
+                    "Esqueci minha senha",
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: AppColors.primaryDark,
+                      decoration: TextDecoration.underline,
+                      decorationColor: AppColors.primaryDark,
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () {},
-                child: const Text(
-                  "Esqueci minha senha",
-                  style: TextStyle(
-                    color: Colors.black54,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: const [
-                  Expanded(child: Divider(color: Colors.black26)),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8),
-                    child: Text("ou"),
-                  ),
-                  Expanded(child: Divider(color: Colors.black26)),
-                ],
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0XFFF08A9C),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                const SizedBox(height: 8),
+                const Row(
+                  children: [
+                    Expanded(child: Divider(color: AppColors.fieldBorder)),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        "ou",
+                        style: TextStyle(color: AppColors.subtitle),
+                      ),
                     ),
-                  ),
-                  onPressed: () {},
-                  icon: const Icon(Icons.g_mobiledata, size: 28),
-                  label: const Text(
-                    "Entrar com o Google",
-                    style: TextStyle(color: Colors.black87),
-                  ),
+                    Expanded(child: Divider(color: AppColors.fieldBorder)),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CadastroPage()),
-                  );
-                },
-                child: const Text(
-                  "Não tem conta? Cadastre-se",
-                  style: TextStyle(color: Colors.black54),
+                const SizedBox(height: 16),
+                GoogleButton(onPressed: () {}),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "Não tem conta? ",
+                      style: TextStyle(color: AppColors.subtitle),
+                    ),
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CadastroPage(),
+                          ),
+                        );
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Text(
+                          "Cadastre-se",
+                          style: TextStyle(
+                            color: AppColors.primaryDark,
+                            decoration: TextDecoration.underline,
+                            decorationColor: AppColors.primaryDark,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 40),
-            ],
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),
