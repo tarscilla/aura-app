@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 import "package:google_fonts/google_fonts.dart";
-import "pages/login_page.dart";
+import "pages/auth_gate.dart";
 import "package:firebase_core/firebase_core.dart";
 import "firebase_options.dart";
 
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         textTheme: GoogleFonts.poppinsTextTheme(),
       ),
-      home: const LoginPage(),
+      home: const AuthGate(),
     );
   }
 }

@@ -1,4 +1,6 @@
 import "package:firebase_auth/firebase_auth.dart";
+import "package:google_sign_in/google_sign_in.dart";
+import "package:flutter/foundation.dart";
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -30,6 +32,7 @@ class AuthService {
 
   Future<String?> recuperarSenha(String email) async {
     try {
+      await _auth.setLanguageCode("pt-BR");
       await _auth.sendPasswordResetEmail(email: email.trim());
       return null;
     } on FirebaseAuthException catch (e) {
@@ -57,6 +60,32 @@ class AuthService {
         return "Muitas tentativas. Tente de novo mais tarde.";
       default:
         return "Algo deu errado. Tente novamente.";
+    }
+  }
+
+    static bool _googleIniciado = false;
+
+  Future<String?> entrarComGoogle() async {
+    try {
+      if (!_googleIniciado) {
+        await GoogleSignIn.instance.initialize(
+          serverClientId: "215316066288-gdfk4cv0i3l5uoac5anm9piq7os8bnrm.apps.googleusercontent.com",
+        );
+        _googleIniciado = true;
+      }
+
+      final googleUser = await GoogleSignIn.instance.authenticate();
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleUser.authentication.idToken,
+      );
+      await _auth.signInWithCredential(credential);
+      return null;
+    } catch (e) {
+      debugPrint("Erro Google: $e");
+      if (e.toString().toLowerCase().contains("cancel")) {
+        return "Login com o Google cancelado.";
+      }
+      return "Não foi possível entrar com o Google.";
     }
   }
 }
