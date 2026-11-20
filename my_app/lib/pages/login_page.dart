@@ -66,6 +66,14 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+    Future<void> _entrarComGoogle() async {
+    final erro = await _auth.entrarComGoogle();
+    if (!mounted) return;
+    if (erro != null) {
+      _mostrarMensagem(erro);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -153,7 +161,7 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                GoogleButton(onPressed: () {}),
+                GoogleButton(onPressed: _entrarComGoogle),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

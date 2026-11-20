@@ -59,6 +59,16 @@ class _CadastroPageState extends State<CadastroPage> {
     _mostrarMensagem(erro ?? "Conta criada com sucesso!");
   }
 
+    Future<void> _entrarComGoogle() async {
+    final erro = await _auth.entrarComGoogle();
+    if (!mounted) return;
+    if (erro != null) {
+      _mostrarMensagem(erro);
+      return;
+    }
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,7 +151,7 @@ class _CadastroPageState extends State<CadastroPage> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                GoogleButton(onPressed: () {}),
+                GoogleButton(onPressed: _entrarComGoogle),
                 const SizedBox(height: 20),
                 TextButton(
                   onPressed: () => Navigator.pop(context),

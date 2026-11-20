@@ -1,8 +1,8 @@
 import "package:flutter/material.dart";
 import "package:google_fonts/google_fonts.dart";
-import "pages/login_page.dart";
 import "package:firebase_core/firebase_core.dart";
 import "firebase_options.dart";
+import "package:my_app/pages/auth_gate.dart";
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         textTheme: GoogleFonts.poppinsTextTheme(),
       ),
-      home: const LoginPage(),
+      home: const AuthGate(),
     );
   }
 }
