@@ -36,7 +36,7 @@ class _CadastroPageState extends State<CadastroPage> {
     );
   }
 
-  Future<void> _cadastrar() async {
+    Future<void> _cadastrar() async {
     final nome = _nomeController.text.trim();
     final email = _emailController.text.trim();
     final senha = _senhaController.text;
@@ -56,7 +56,22 @@ class _CadastroPageState extends State<CadastroPage> {
     if (!mounted) return;
     setState(() => _carregando = false);
 
-    _mostrarMensagem(erro ?? "Conta criada com sucesso!");
+    if (erro != null) {
+      _mostrarMensagem(erro);
+      return;
+    }
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  Future<void> _entrarComGoogle() async {
+    final erro = await _auth.entrarComGoogle();
+    if (!mounted) return;
+
+    if (erro != null) {
+      _mostrarMensagem(erro);
+      return;
+    }
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
     Future<void> _entrarComGoogle() async {

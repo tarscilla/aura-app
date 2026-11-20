@@ -1,3 +1,4 @@
+
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 import "../services/auth_service.dart";
@@ -7,7 +8,7 @@ class HomePage extends StatelessWidget {
   final ValueChanged<int>? aoIrParaAba;
 
   const HomePage({super.key, this.aoIrParaAba});
-  
+
   static const double _progressoHoje = 0.7;
   static const String _agua = "5/8";
   static const String _sono = "5hrs 17mn";
@@ -35,6 +36,7 @@ class HomePage extends StatelessWidget {
         ],
       ),
     );
+
     if (sair == true) {
       await AuthService().sair();
     }
@@ -122,7 +124,9 @@ class HomePage extends StatelessWidget {
                     texto: "Favoritos",
                     aoTocar: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Em breve: favoritos.")),
+                        const SnackBar(
+                          content: Text("Em breve: favoritos."),
+                        ),
                       );
                     },
                   ),
@@ -137,6 +141,7 @@ class HomePage extends StatelessWidget {
 
   Widget _cabecalho(BuildContext context) {
     final nome = _primeiroNome();
+
     return Row(
       children: [
         Expanded(
@@ -154,13 +159,14 @@ class HomePage extends StatelessWidget {
               const SizedBox(height: 2),
               const Text(
                 "Seja bem-vinda! ✨",
-                style: TextStyle(fontSize: 17, color: AppColors.subtitle),
+                style: TextStyle(
+                  fontSize: 17,
+                  color: AppColors.subtitle,
+                ),
               ),
             ],
           ),
         ),
-        // Temporário: tocar no avatar pergunta se quer sair.
-        // Quando existir a tela de Perfil, ele abre o Perfil.
         GestureDetector(
           onTap: () => _confirmarSaida(context),
           child: Container(
@@ -169,7 +175,10 @@ class HomePage extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.field,
-              border: Border.all(color: AppColors.primary, width: 1.5),
+              border: Border.all(
+                color: AppColors.primary,
+                width: 1.5,
+              ),
             ),
             child: ClipOval(
               child: Image.asset(
@@ -233,7 +242,10 @@ class HomePage extends StatelessWidget {
                 const SizedBox(height: 10),
                 const Text(
                   "concluído...",
-                  style: TextStyle(fontSize: 13, color: AppColors.subtitle),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.subtitle,
+                  ),
                 ),
               ],
             ),

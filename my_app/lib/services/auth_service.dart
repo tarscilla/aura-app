@@ -1,3 +1,4 @@
+
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/foundation.dart";
 import "package:google_sign_in/google_sign_in.dart";
@@ -17,7 +18,7 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       debugPrint("Firebase: ${e.code} - ${e.message}");
       return _mensagemDeErro(e.code);
-    } 
+    }
   }
 
   Future<String?> cadastrar(String nome, String email, String senha) async {
@@ -36,6 +37,7 @@ class AuthService {
 
   Future<String?> recuperarSenha(String email) async {
     try {
+      await _auth.setLanguageCode("pt-BR");
       await _auth.sendPasswordResetEmail(email: email.trim());
       return null;
     } on FirebaseAuthException catch (e) {
