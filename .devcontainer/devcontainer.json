@@ -1,5 +1,5 @@
 {
-  "name": "Flutter",
+  "name": "AURA",
   "image": "mcr.microsoft.com/devcontainers/python:3.12",
   "customizations": {
     "vscode": {
@@ -8,5 +8,9 @@
         "Dart-Code.dart-code"
       ]
     }
+  },
+  "postCreateCommand": "if [ ! -d \"$HOME/flutter\" ]; then git clone https://github.com/flutter/flutter.git -b stable \"$HOME/flutter\"; fi",
+  "remoteEnv": {
+    "PATH": "${containerEnv:HOME}/flutter/bin:${containerEnv:PATH}"
   }
 }
