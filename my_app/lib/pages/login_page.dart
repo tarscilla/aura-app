@@ -66,6 +66,18 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+    Future<void> _entrarComGoogle() async {
+      final erro = await _auth.entrarComGoogle();
+      if (!mounted) return;
+
+      if (erro != null) {
+        _mostrarMensagem(erro);
+        return;
+      }
+
+      _mostrarMensagem("Login feito com sucesso!");
+    }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -194,11 +206,5 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
-  }
-
-    Future<void> _entrarComGoogle() async {
-    final erro = await _auth.entrarComGoogle();
-    if (!mounted) return;
-    _mostrarMensagem(erro ?? "Login feito com sucesso!");
   }
 }

@@ -1,10 +1,9 @@
 import "package:flutter/material.dart";
-import 'package:intl/date_symbol_data_local.dart';
+import "package:intl/date_symbol_data_local.dart";
 import "package:google_fonts/google_fonts.dart";
-import "pages/auth_gate.dart";
 import "package:firebase_core/firebase_core.dart";
 import "firebase_options.dart";
-import 'pages/cronograma_page.dart';
+import "package:my_app/pages/auth_gate.dart";
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,12 +14,9 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
   runApp(const MyApp());
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -31,7 +27,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         textTheme: GoogleFonts.poppinsTextTheme(),
       ),
-      home: const CronogramaPage(),
+      home: const AuthGate(),
     );
   }
 }

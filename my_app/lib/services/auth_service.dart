@@ -1,9 +1,12 @@
+
 import "package:firebase_auth/firebase_auth.dart";
-import "package:google_sign_in/google_sign_in.dart";
 import "package:flutter/foundation.dart";
+import "package:google_sign_in/google_sign_in.dart";
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  static bool _googleIniciado = false;
 
   Future<String?> entrar(String email, String senha) async {
     try {
@@ -13,6 +16,7 @@ class AuthService {
       );
       return null;
     } on FirebaseAuthException catch (e) {
+      debugPrint("Firebase: ${e.code} - ${e.message}");
       return _mensagemDeErro(e.code);
     }
   }
@@ -26,6 +30,7 @@ class AuthService {
       await cred.user?.updateDisplayName(nome.trim());
       return null;
     } on FirebaseAuthException catch (e) {
+      debugPrint("Firebase: ${e.code} - ${e.message}");
       return _mensagemDeErro(e.code);
     }
   }
@@ -36,11 +41,47 @@ class AuthService {
       await _auth.sendPasswordResetEmail(email: email.trim());
       return null;
     } on FirebaseAuthException catch (e) {
+      debugPrint("Firebase: ${e.code} - ${e.message}");
       return _mensagemDeErro(e.code);
     }
   }
 
-  Future<void> sair() => _auth.signOut();
+  Future<String?> entrarComGoogle() async {
+    try {
+      debugPrint("Google: 1 - iniciando");
+      if (!_googleIniciado) {
+        await GoogleSignIn.instance.initialize(
+          serverClientId: "215316066288-gdfk4cv0i3l5uoac5anm9piq7os8bnrm.apps.googleusercontent.com",
+        );
+        _googleIniciado = true;
+      }
+
+      debugPrint("Google: 2 - abrindo contas");
+      final googleUser = await GoogleSignIn.instance
+          .authenticate()
+          .timeout(const Duration(seconds: 40));
+      debugPrint("Google: 3 - conta escolhida");
+
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleUser.authentication.idToken,
+      );
+      await _auth.signInWithCredential(credential);
+      return null;
+    } catch (e) {
+      debugPrint("Erro Google: $e");
+      if (e.toString().toLowerCase().contains("cancel")) {
+        return "Login com o Google cancelado.";
+      }
+      return "Não foi possível entrar com o Google.";
+    }
+  }
+
+  Future<void> sair() async {
+    await _auth.signOut();
+    try {
+      await GoogleSignIn.instance.signOut();
+    } catch (_) {}
+  }
 
   String _mensagemDeErro(String code) {
     switch (code) {
@@ -60,32 +101,6 @@ class AuthService {
         return "Muitas tentativas. Tente de novo mais tarde.";
       default:
         return "Algo deu errado. Tente novamente.";
-    }
-  }
-
-    static bool _googleIniciado = false;
-
-  Future<String?> entrarComGoogle() async {
-    try {
-      if (!_googleIniciado) {
-        await GoogleSignIn.instance.initialize(
-          serverClientId: "215316066288-gdfk4cv0i3l5uoac5anm9piq7os8bnrm.apps.googleusercontent.com",
-        );
-        _googleIniciado = true;
-      }
-
-      final googleUser = await GoogleSignIn.instance.authenticate();
-      final credential = GoogleAuthProvider.credential(
-        idToken: googleUser.authentication.idToken,
-      );
-      await _auth.signInWithCredential(credential);
-      return null;
-    } catch (e) {
-      debugPrint("Erro Google: $e");
-      if (e.toString().toLowerCase().contains("cancel")) {
-        return "Login com o Google cancelado.";
-      }
-      return "Não foi possível entrar com o Google.";
     }
   }
 }
