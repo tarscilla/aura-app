@@ -71,6 +71,14 @@ class _CadastroPageState extends State<CadastroPage> {
       _mostrarMensagem(erro);
       return;
     }
+
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+  
+    if (erro != null) {
+      _mostrarMensagem(erro);
+      return;
+    }
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 

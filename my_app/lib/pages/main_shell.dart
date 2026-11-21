@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "../widgets/aura_bottom_nav.dart";
 import "home_page.dart";
+import "progress_page.dart";
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -12,13 +13,20 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _indice = 0;
 
-  void _irParaAba(int i) => setState(() => _indice = i);
+  void _irParaAba(int i) {
+    if (i < 0 || i >= _paginas.length) return;
+
+    setState(() {
+      _indice = i;
+    });
+  }
 
   List<Widget> get _paginas => [
         HomePage(aoIrParaAba: _irParaAba),
         const _EmConstrucao("Cronograma capilar"),
         const _EmConstrucao("Ciclo menstrual"),
         const _EmConstrucao("Rotinas"),
+        const ProgressPage(),
       ];
 
   @override
