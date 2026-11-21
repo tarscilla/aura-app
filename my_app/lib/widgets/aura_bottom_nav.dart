@@ -16,6 +16,7 @@ class AuraBottomNav extends StatelessWidget {
     Icons.face_retouching_natural,
     Icons.calendar_month_rounded,
     Icons.local_florist_rounded,
+    Icons.insights_rounded,
   ];
 
   @override
