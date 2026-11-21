@@ -1,3 +1,4 @@
+
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 import "../widgets/perfil_prompt.dart";
@@ -17,9 +18,11 @@ class AuthGate extends StatelessWidget {
             body: Center(child: CircularProgressIndicator()),
           );
         }
+
         if (snapshot.hasData) {
           return const PerfilPrompt(child: MainShell());
         }
+
         return const LoginPage();
       },
     );

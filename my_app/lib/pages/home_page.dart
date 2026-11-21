@@ -526,26 +526,24 @@ class _AtalhoCard extends StatelessWidget {
 }
 
 class _IconeCiclo extends StatelessWidget {
-  final double tamanho;
-
-  const _IconeCiclo({this.tamanho = 36});
+  const _IconeCiclo();
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: tamanho,
-      height: tamanho,
+    return const SizedBox(
+      width: 36,
+      height: 36,
       child: Stack(
         alignment: Alignment.center,
         children: [
           Icon(
             Icons.favorite_rounded,
-            size: tamanho,
+            size: 36,
             color: AppColors.primaryDark,
           ),
           Icon(
             Icons.water_drop,
-            size: tamanho * 0.42,
+            size: 15,
             color: Colors.white,
           ),
         ],
