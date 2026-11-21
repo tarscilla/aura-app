@@ -65,7 +65,8 @@ class _QuestionarioSheetState extends State<_QuestionarioSheet> {
 
   String? _pele;
   String? _cabelo;
-  bool _aceitou = false;
+  bool _aceitouRecomendacoes = false;
+  bool _aceitouDadosAcademicos = false;
   bool _salvando = false;
   String? _erro;
 
@@ -74,10 +75,7 @@ class _QuestionarioSheetState extends State<_QuestionarioSheet> {
       setState(() => _erro = "Escolha o tipo de pele e o tipo de cabelo.");
       return;
     }
-    if (!_aceitou) {
-      setState(() => _erro = "Marque o aceite para salvar suas respostas.");
-      return;
-    }
+    
 
     setState(() {
       _salvando = true;
@@ -92,7 +90,8 @@ class _QuestionarioSheetState extends State<_QuestionarioSheet> {
         "questionarioConcluido": true,
         "tipoPele": _pele,
         "tipoCabelo": _cabelo,
-        "aceitouUsoDosDados": true,
+        "aceitouRecomendacoes": _aceitouRecomendacoes,
+        "aceitouDadosAcademicos": _aceitouDadosAcademicos,
         "atualizadoEm": FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
       if (!mounted) return;
@@ -177,15 +176,27 @@ class _QuestionarioSheetState extends State<_QuestionarioSheet> {
             _opcoes(_tiposCabelo, _cabelo, (v) => setState(() => _cabelo = v)),
             const SizedBox(height: 16),
             CheckboxListTile(
-              value: _aceitou,
-              onChanged: (v) => setState(() => _aceitou = v ?? false),
+              value: _aceitouRecomendacoes,
+              onChanged: (v) =>
+                  setState(() => _aceitouRecomendacoes = v ?? false),
               activeColor: AppColors.primaryDark,
               contentPadding: EdgeInsets.zero,
               controlAffinity: ListTileControlAffinity.leading,
               title: const Text(
-                "Aceito que minhas respostas sejam usadas para personalizar "
-                "recomendações e, sem nome nem e-mail, em análises "
-                "acadêmicas de dados.",
+                "Quero receber recomendações personalizadas de produtos.",
+                style: TextStyle(fontSize: 13, color: AppColors.subtitle),
+              ),
+            ),
+            CheckboxListTile(
+              value: _aceitouDadosAcademicos,
+              onChanged: (v) =>
+                  setState(() => _aceitouDadosAcademicos = v ?? false),
+              activeColor: AppColors.primaryDark,
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              title: const Text(
+                "Autorizo o uso das minhas respostas, sem identificação, "
+                "em análises acadêmicas de dados.",
                 style: TextStyle(fontSize: 13, color: AppColors.subtitle),
               ),
             ),
