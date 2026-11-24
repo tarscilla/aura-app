@@ -4,6 +4,9 @@ import '../models/tratamento.dart';
 import '../viewmodels/cronograma_viewmodel.dart';
 import '../widgets/calendario_widget.dart';
 import '../widgets/tratamento_card.dart';
+import '../theme/app_colors.dart';
+import '../widgets/aura_background.dart';
+
 
 class CronogramaPage extends StatelessWidget {
   const CronogramaPage({super.key});
@@ -21,7 +24,6 @@ class _CronogramaConteudo extends StatelessWidget {
   const _CronogramaConteudo();
 
   static const Color rosa = Color(0xFFE9A0B5);
-  static const Color fundo = Color(0xFFFFF7F9);
   static const Color texto = Color(0xFF59434B);
 
   @override
@@ -29,8 +31,8 @@ class _CronogramaConteudo extends StatelessWidget {
     final viewModel = context.watch<CronogramaViewModel>();
 
     return Scaffold(
-      backgroundColor: fundo,
-      body: SafeArea(
+    body: AuraBackground(
+      child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -43,20 +45,27 @@ class _CronogramaConteudo extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Seu cabelo, seu cuidado',
-                        style: TextStyle(
-                          color: Color(0xFF99878D),
-                          fontSize: 13,
-                        ),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
                         'Cronograma Capilar',
                         style: TextStyle(
-                          color: texto,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.title,
+                      ),
+                      ),
+                      SizedBox(height: 5),
+                      Row(
+                        children: [
+                      Text(
+                          "Seu cabelo, seu cuidado",
+                          style: TextStyle(fontSize: 15, color: AppColors.subtitle),
                         ),
+                        SizedBox(width: 5),
+                        Icon(
+                          Icons.favorite_rounded,
+                          size: 14,
+                          color: AppColors.primary,
+                        ),
+                        ],
                       ),
                     ],
                   ),
@@ -160,6 +169,7 @@ class _CronogramaConteudo extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 

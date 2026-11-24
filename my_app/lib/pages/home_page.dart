@@ -5,6 +5,7 @@ import "../services/auth_service.dart";
 import "../theme/app_colors.dart";
 import "../widgets/aura_background.dart";
 import "../widgets/aura_buttons.dart";
+import "perfil_page.dart";
 
 const int _metaAgua = 8;
 const int _metaSonoMin = 8 * 60;
@@ -275,8 +276,17 @@ class HomePage extends StatelessWidget {
           ),
         ),
 
-        GestureDetector(
-          onTap: () => _confirmarSaida(context),
+        MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const PerfilPage(),
+              ),
+            );
+          },
           child: Container(
             width: 56,
             height: 56,
@@ -297,6 +307,7 @@ class HomePage extends StatelessWidget {
               ),
             ),
           ),
+        ),
         ),
       ],
     );
