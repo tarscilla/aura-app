@@ -1,4 +1,6 @@
 import "package:flutter/material.dart";
+import "package:my_app/pages/ciclo_page.dart";
+
 import "../widgets/aura_bottom_nav.dart";
 import "home_page.dart";
 import "progress_page.dart";
@@ -22,12 +24,12 @@ class _MainShellState extends State<MainShell> {
   }
 
   List<Widget> get _paginas => [
-        HomePage(aoIrParaAba: _irParaAba),
-        const _EmConstrucao("Cronograma capilar"),
-        const _EmConstrucao("Ciclo menstrual"),
-        const _EmConstrucao("Rotinas"),
-        const ProgressPage(),
-      ];
+    HomePage(aoIrParaAba: _irParaAba),
+    const _EmConstrucao("Cronograma capilar"),
+    const CicloPage(),
+    const _EmConstrucao("Rotinas"),
+    const ProgressPage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -48,8 +50,6 @@ class _EmConstrucao extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(child: Text("$titulo — em construção")),
-    );
+    return Scaffold(body: Center(child: Text("$titulo — em construção")));
   }
 }
