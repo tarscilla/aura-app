@@ -3,6 +3,7 @@ import "package:my_app/pages/ciclo_page.dart";
 
 import "../widgets/aura_bottom_nav.dart";
 import "home_page.dart";
+import "cronograma_page.dart";
 import "progress_page.dart";
 
 class MainShell extends StatefulWidget {
@@ -24,17 +25,20 @@ class _MainShellState extends State<MainShell> {
   }
 
   List<Widget> get _paginas => [
-    HomePage(aoIrParaAba: _irParaAba),
-    const _EmConstrucao("Cronograma capilar"),
-    const CicloPage(),
-    const _EmConstrucao("Rotinas"),
-    const ProgressPage(),
-  ];
+        HomePage(aoIrParaAba: _irParaAba),
+        CronogramaPage(),
+        const CicloPage(),
+        const _EmConstrucao("Rotinas"),
+        const ProgressPage(),
+      ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _indice, children: _paginas),
+      body: IndexedStack(
+        index: _indice,
+        children: _paginas,
+      ),
       bottomNavigationBar: AuraBottomNav(
         indice: _indice,
         aoSelecionar: _irParaAba,
@@ -50,6 +54,10 @@ class _EmConstrucao extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: Text("$titulo — em construção")));
+    return Scaffold(
+      body: Center(
+        child: Text("$titulo — em construção"),
+      ),
+    );
   }
 }

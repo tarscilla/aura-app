@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../viewmodels/cronograma_viewmodel.dart';
@@ -13,6 +14,78 @@ class CalendarioWidget extends StatelessWidget {
   static const Color rosa = Color(0xFFE9A0B5);
   static const Color rosaClaro = Color(0xFFFCEEF2);
   static const Color texto = Color(0xFF59434B);
+
+  Color _corCategoria(String categoria) {
+    switch (categoria.toLowerCase()) {
+      case 'hidratação':
+        return const Color(0xFF91B9D8);
+      case 'nutrição':
+        return const Color(0xFFE5B477);
+      case 'reconstrução':
+        return const Color(0xFFB59ACF);
+      default:
+        return rosa;
+    }
+  }
+
+  List<Color> _coresDoDia(DateTime dia) {
+    final tratamentos = viewModel.tratamentos.where((tratamento) {
+      return isSameDay(tratamento.data, dia);
+    });
+
+    return tratamentos
+        .map((tratamento) => _corCategoria(tratamento.categoria))
+        .toSet()
+        .toList();
+  }
+
+  Widget _construirDia(
+    DateTime dia, {
+    bool selecionado = false,
+    bool hoje = false,
+  }) {
+    final cores = _coresDoDia(dia);
+
+    return Center(
+      child: SizedBox(
+        width: 42,
+        height: 42,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            if (selecionado || hoje)
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: selecionado ? rosa : rosaClaro,
+                  shape: BoxShape.circle,
+                ),
+              ),
+
+            if (cores.isNotEmpty)
+              CustomPaint(
+                size: const Size(40, 40),
+                painter: CirculoEtapasPainter(cores: cores),
+              ),
+
+            Text(
+              '${dia.day}',
+              style: TextStyle(
+                color: selecionado
+                    ? Colors.white
+                    : hoje
+                        ? rosa
+                        : texto,
+                fontWeight:
+                    selecionado || hoje ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,22 +108,24 @@ class CalendarioWidget extends StatelessWidget {
         lastDay: DateTime.utc(2035, 12, 31),
         focusedDay: viewModel.mesAtual,
         currentDay: DateTime.now(),
+
         selectedDayPredicate: (day) {
           return isSameDay(day, viewModel.dataSelecionada);
         },
+
         onDaySelected: (selectedDay, focusedDay) {
           viewModel.selecionarData(selectedDay);
         },
+
         onPageChanged: (focusedDay) {
-          viewModel.selecionarData(
-            viewModel.dataSelecionada,
-          );
+          viewModel.selecionarData(viewModel.dataSelecionada);
           viewModel.mudarMes(
             (focusedDay.year - viewModel.mesAtual.year) * 12 +
                 focusedDay.month -
                 viewModel.mesAtual.month,
           );
         },
+
         headerStyle: const HeaderStyle(
           titleCentered: true,
           formatButtonVisible: false,
@@ -68,6 +143,7 @@ class CalendarioWidget extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
+
         daysOfWeekStyle: const DaysOfWeekStyle(
           weekdayStyle: TextStyle(
             color: texto,
@@ -78,46 +154,77 @@ class CalendarioWidget extends StatelessWidget {
             fontSize: 12,
           ),
         ),
+
         calendarStyle: const CalendarStyle(
           outsideDaysVisible: false,
-          defaultTextStyle: TextStyle(color: texto),
-          weekendTextStyle: TextStyle(color: texto),
-          todayDecoration: BoxDecoration(
-            color: rosaClaro,
-            shape: BoxShape.circle,
-          ),
-          todayTextStyle: TextStyle(
-            color: rosa,
-            fontWeight: FontWeight.bold,
-          ),
-          selectedDecoration: BoxDecoration(
-            color: rosa,
-            shape: BoxShape.circle,
-          ),
-          selectedTextStyle: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
         ),
+
         calendarBuilders: CalendarBuilders(
-          markerBuilder: (context, day, events) {
-            if (viewModel.possuiTratamento(day)) {
-              return Positioned(
-                bottom: 4,
-                child: Container(
-                  width: 5,
-                  height: 5,
-                  decoration: const BoxDecoration(
-                    color: rosa,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              );
-            }
-            return null;
+          defaultBuilder: (context, day, focusedDay) {
+            return _construirDia(day);
+          },
+
+          todayBuilder: (context, day, focusedDay) {
+            return _construirDia(day, hoje: true);
+          },
+
+          selectedBuilder: (context, day, focusedDay) {
+            return _construirDia(day, selecionado: true);
           },
         ),
       ),
     );
+  }
+}
+
+class CirculoEtapasPainter extends CustomPainter {
+  final List<Color> cores;
+
+  CirculoEtapasPainter({required this.cores});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (cores.isEmpty) return;
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
+
+    final centro = Offset(size.width / 2, size.height / 2);
+    final raio = 18.5;
+    final retangulo = Rect.fromCircle(
+      center: centro,
+      radius: raio,
+    );
+
+    if (cores.length == 1) {
+      paint.color = cores.first;
+      canvas.drawCircle(centro, raio, paint);
+      return;
+    }
+
+    final anguloPorEtapa = (2 * math.pi) / cores.length;
+    const espacamento = 0.10;
+
+    for (int i = 0; i < cores.length; i++) {
+      paint.color = cores[i];
+
+      canvas.drawArc(
+        retangulo,
+        -math.pi / 2 + (i * anguloPorEtapa),
+        anguloPorEtapa - espacamento,
+        false,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CirculoEtapasPainter oldDelegate) {
+    return oldDelegate.cores.length != cores.length ||
+        !oldDelegate.cores.every(
+          (cor) => cores.contains(cor),
+        );
   }
 }
