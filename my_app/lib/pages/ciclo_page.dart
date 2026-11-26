@@ -5,6 +5,7 @@ import "package:flutter/material.dart";
 import "../theme/app_colors.dart";
 import "../widgets/aura_background.dart";
 import "../widgets/aura_buttons.dart";
+import "perfil_page.dart";
 
 const int _cicloPadrao = 28;
 
@@ -430,26 +431,42 @@ class _CicloPageState extends State<CicloPage> {
             ),
           ),
         ),
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.field,
-            border: Border.all(color: AppColors.primary, width: 1.5),
-          ),
-          child: ClipOval(
-            child: Image.asset(
-              "assets/images/avatar.png",
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => const Icon(
-                Icons.person,
-                size: 26,
-                color: AppColors.primaryDark,
-              ),
-            ),
+        MouseRegion(
+  cursor: SystemMouseCursors.click,
+  child: GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const PerfilPage(),
+        ),
+      );
+    },
+    child: Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.field,
+        border: Border.all(
+          color: AppColors.primary,
+          width: 1.5,
+        ),
+      ),
+      child: ClipOval(
+        child: Image.asset(
+          "assets/images/avatar.png",
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => const Icon(
+            Icons.person,
+            size: 30,
+            color: AppColors.primaryDark,
           ),
         ),
+      ),
+    ),
+  ),
+),
       ],
     );
   }

@@ -1,7 +1,6 @@
 import "package:cloud_firestore/cloud_firestore.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
-import "../services/auth_service.dart";
 import "../theme/app_colors.dart";
 import "../widgets/aura_background.dart";
 import "../widgets/aura_buttons.dart";
@@ -85,27 +84,6 @@ class HomePage extends StatelessWidget {
     return (pAgua + pSono + pHumor) / 3;
   }
 
-  Future<void> _confirmarSaida(BuildContext context) async {
-    final sair = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text("Sair da conta?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text("Cancelar"),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text("Sair"),
-          ),
-        ],
-      ),
-    );
-    if (sair == true) {
-      await AuthService().sair();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

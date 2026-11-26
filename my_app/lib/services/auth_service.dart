@@ -76,12 +76,34 @@ class AuthService {
     }
   }
 
-  Future<void> sair() async {
-    await _auth.signOut();
-    try {
-      await GoogleSignIn.instance.signOut();
-    } catch (_) {}
+Future<String?> atualizarNome(String nome) async {
+  try {
+    final usuario = _auth.currentUser;
+
+    if (usuario == null) {
+      return "Nenhum usuário está conectado.";
+    }
+
+    if (nome.trim().isEmpty) {
+      return "O nome não pode ficar vazio.";
+    }
+
+    await usuario.updateDisplayName(nome.trim());
+    await usuario.reload();
+
+    return null;
+  } on FirebaseAuthException catch (e) {
+    debugPrint("Erro ao atualizar nome: ${e.code}");
+    return "Não foi possível atualizar seu nome.";
+  } catch (e) {
+    debugPrint("Erro inesperado ao atualizar nome: $e");
+    return "Ocorreu um erro ao atualizar seu nome.";
   }
+}
+
+  Future<void> sair() async {
+  await _auth.signOut();
+}
 
   String _mensagemDeErro(String code) {
     switch (code) {

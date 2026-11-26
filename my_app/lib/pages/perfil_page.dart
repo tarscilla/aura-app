@@ -1,7 +1,16 @@
-import "package:flutter/material.dart";
-import "../theme/app_colors.dart";
-import "../widgets/aura_background.dart";
-import "../services/auth_service.dart";
+
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+
+import '../theme/app_colors.dart';
+import '../services/auth_service.dart';
+import '../services/theme_service.dart';
+import '../widgets/aura_background.dart';
 
 class PerfilPage extends StatefulWidget {
   const PerfilPage({super.key});
@@ -11,49 +20,13 @@ class PerfilPage extends StatefulWidget {
 }
 
 class _PerfilPageState extends State<PerfilPage> {
-  String? _avatarSelecionado;
+  void _abrirPrivacidade() {
+  final email = FirebaseAuth.instance.currentUser?.email ??
+      'E-mail não disponível';
 
-  final List<String> _avatares = List.generate(
-  16,
-  (index) =>
-      "assets/images/avatares/avatar_${(index + 1).toString().padLeft(2, '0')}.png",
-);
-
-  Future<void> _sairDaConta(BuildContext context) async {
-  final confirmar = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text("Sair da conta?"),
-      content: const Text(
-        "Tem certeza de que deseja sair do AURA?",
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text("Cancelar"),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(context, true),
-          child: const Text("Sair"),
-        ),
-      ],
-    ),
-  );
-
-  if (confirmar == true) {
-    await AuthService().sair();
-
-    if (context.mounted) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      }
-    }
-  }
-  
-void _abrirGaleriaAvatares() {
   showModalBottomSheet(
     context: context,
-    backgroundColor: Colors.white,
-    isScrollControlled: true,
+    backgroundColor: Theme.of(context).cardColor,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
         top: Radius.circular(24),
@@ -61,69 +34,42 @@ void _abrirGaleriaAvatares() {
     ),
     builder: (context) {
       return SafeArea(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.75,
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                const Text(
-                  "Escolha seu avatar",
-                  style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.title,
-                  ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Privacidade e segurança',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
+              ),
+              const SizedBox(height: 16),
 
-                const SizedBox(height: 24),
-
-                Expanded(
-                  child: GridView.builder(
-                    itemCount: _avatares.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      crossAxisSpacing: 14,
-                      mainAxisSpacing: 14,
-                      childAspectRatio: 0.85,
-                    ),
-                    itemBuilder: (context, index) {
-                      final avatar = _avatares[index];
-
-                      return MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _avatarSelecionado = avatar;
-                            });
-
-                            Navigator.pop(context);
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.field,
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                color: AppColors.primary,
-                              ),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(17),
-                              child: Image.asset(
-                                avatar,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+              ListTile(
+                leading: const Icon(
+                  Icons.email_outlined,
+                  color: AppColors.primaryDark,
                 ),
-              ],
-            ),
+                title: const Text('E-mail da conta'),
+                subtitle: Text(email),
+              ),
+
+              ListTile(
+                leading: const Icon(
+                  Icons.lock_outline,
+                  color: AppColors.primaryDark,
+                ),
+                title: const Text('Alterar senha'),
+                subtitle: const Text(
+                  'A alteração poderá ser realizada pelo e-mail cadastrado.',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+              ),
+            ],
           ),
         ),
       );
@@ -131,9 +77,378 @@ void _abrirGaleriaAvatares() {
   );
 }
 
+  final ImagePicker _picker = ImagePicker();
+  XFile? _fotoGaleria;
+  bool _saindo = false;
+
+  final TextEditingController _nomeController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _nomeController.text =
+        FirebaseAuth.instance.currentUser?.displayName ?? '';
+  }
+
+  @override
+  void dispose() {
+    _nomeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selecionarFotoGaleria() async {
+    try {
+      final XFile? imagem = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 100,
+      );
+
+      if (imagem != null && mounted) {
+        setState(() {
+          _fotoGaleria = imagem;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível abrir a galeria de fotos.'),
+        ),
+      );
+    }
+  }
+
+  void _abrirOpcoesFoto() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(24),
+        ),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Alterar foto de perfil',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.title,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: const Icon(
+                    Icons.photo_library_outlined,
+                    color: AppColors.primaryDark,
+                  ),
+                  title: const Text('Adicionar foto da galeria'),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _selecionarFotoGaleria();
+                  },
+                ),
+                if (_fotoGaleria != null)
+                  ListTile(
+                    leading: const Icon(
+                      Icons.delete_outline,
+                      color: Colors.redAccent,
+                    ),
+                    title: const Text('Remover foto atual'),
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      setState(() {
+                        _fotoGaleria = null;
+                      });
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _editarInformacoes() async {
+    _nomeController.text =
+        FirebaseAuth.instance.currentUser?.displayName ?? '';
+
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Editar informações'),
+          content: TextField(
+            controller: _nomeController,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(
+              labelText: 'Nome',
+              hintText: 'Digite seu nome',
+              prefixIcon: Icon(Icons.person_outline),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Salvar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmar != true || !mounted) return;
+
+    final erro = await AuthService().atualizarNome(
+      _nomeController.text,
+    );
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          erro ?? 'Nome atualizado com sucesso!',
+        ),
+      ),
+    );
+
+    if (erro == null) {
+      setState(() {});
+    }
+  }
+
+  void _abrirAparencia() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).cardColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(24),
+        ),
+      ),
+      builder: (sheetContext) {
+        return Consumer<ThemeService>(
+          builder: (context, themeService, child) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Aparência',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    RadioListTile<bool>(
+                      value: false,
+                      groupValue: themeService.isDarkMode,
+                      activeColor: AppColors.primary,
+                      title: const Text('Claro'),
+                      secondary: const Icon(Icons.light_mode_outlined),
+                      onChanged: (value) {
+                        if (value != null) {
+                          themeService.alterarTema(value);
+                        }
+                      },
+                    ),
+                    RadioListTile<bool>(
+                      value: true,
+                      groupValue: themeService.isDarkMode,
+                      activeColor: AppColors.primary,
+                      title: const Text('Escuro'),
+                      secondary: const Icon(Icons.dark_mode_outlined),
+                      onChanged: (value) {
+                        if (value != null) {
+                          themeService.alterarTema(value);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _sairDaConta(BuildContext context) async {
+    if (_saindo) return;
+
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("Sair da conta?"),
+        content: const Text(
+          "Tem certeza de que deseja sair do AURA?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text("Cancelar"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text("Sair"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar != true || !mounted) return;
+
+    setState(() => _saindo = true);
+
+    try {
+      await AuthService().sair();
+
+      if (!mounted) return;
+
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() => _saindo = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Erro ao sair da conta: $e"),
+        ),
+      );
+    }
+  }
+
+  Widget _buildAvatarImage() {
+    const double size = 112;
+
+    if (_fotoGaleria != null) {
+      if (kIsWeb) {
+        return Image.network(
+          _fotoGaleria!.path,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+        );
+      }
+
+      return Image.file(
+        File(_fotoGaleria!.path),
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+      );
+    }
+
+    return Image.asset(
+      '/assets/images/avatar.png',
+      width: size,
+      height: size,
+      fit: BoxFit.cover,
+    );
+  }
+
+  Widget _buildFotoPerfil() {
+    return Center(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: _abrirOpcoesFoto,
+          child: Stack(
+            children: [
+              ClipOval(
+                child: _buildAvatarImage(),
+              ),
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: CircleAvatar(
+                  radius: 20,
+                  backgroundColor: AppColors.primary,
+                  child: const Icon(
+                    Icons.edit,
+                    size: 20,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOpcao({
+    required IconData icone,
+    required String titulo,
+    String? descricao,
+    VoidCallback? onTap,
+  }) {
+    final corTexto = Theme.of(context).colorScheme.onSurface;
+
+    return Card(
+      elevation: 1,
+      color: Theme.of(context).cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 5,
+        ),
+        leading: CircleAvatar(
+          backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+          child: Icon(
+            icone,
+            color: AppColors.primaryDark,
+          ),
+        ),
+        title: Text(
+          titulo,
+          style: TextStyle(
+            color: corTexto,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: descricao == null
+            ? null
+            : Text(
+                descricao,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final nome =
+        FirebaseAuth.instance.currentUser?.displayName ?? 'Usuário';
+
     return Scaffold(
       body: AuraBackground(
         child: SafeArea(
@@ -145,294 +460,138 @@ void _abrirGaleriaAvatares() {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Cabeçalho
                 Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(
-                        Icons.arrow_back_ios_new,
-                        color: AppColors.title,
-                      ),
+                      children: [
+                        IconButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new,
+                            color: AppColors.title,
+                            size: 21,
+                          ),
+                          tooltip: 'Voltar para home',
+                        ),
+                        const SizedBox(width: 4),
+                        const Text(
+                          'Meu perfil',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.title,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      "Meu perfil",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.title,
-                      ),
-                    ),
-                  ],
-                ),
+                const SizedBox(height: 24),
 
-                const SizedBox(height: 32),
+                _buildFotoPerfil(),
 
-                // Foto do perfil
+                const SizedBox(height: 16),
+
                 Center(
-                  child: Column(
-                    children: [
-                    MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: GestureDetector(
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              backgroundColor: Colors.white,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(24),
-                                ),
-                              ),
-                              builder: (context) {
-                                return Padding(
-                                  padding: const EdgeInsets.all(24),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Text(
-                                        "Alterar foto de perfil",
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.title,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-
-                                      ListTile(
-                                        leading: const Icon(
-                                          Icons.photo_library_outlined,
-                                          color: AppColors.primaryDark,
-                                        ),
-                                        title: const Text("Adicionar foto da galeria"),
-                                        onTap: () {
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-
-                                      ListTile(
-                                        leading: const Icon(
-                                          Icons.face_retouching_natural,
-                                          color: AppColors.primaryDark,
-                                        ),
-                                        title: const Text("Escolher avatar ilustrado"),
-                                        onTap: () {
-                                          Navigator.pop(context);
-                                          _abrirGaleriaAvatares();
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        child: Container(
-                          width: 112,
-                          height: 112,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.field,
-                            border: Border.all(
-                              color: AppColors.primary,
-                              width: 3,
-                            ),
-                          ),
-                          child: ClipOval(
-                                    child: Center(
-                                      child: _avatarSelecionado != null
-                                          ? Image.asset(
-                                              _avatarSelecionado!,
-                                              fit: BoxFit.cover,
-                                              width: 112,
-                                              height: 112,
-                                            )
-                                          : Image.asset(
-                                              "assets/images/avatar.png",
-                                              fit: BoxFit.cover,
-                                              width: 112,
-                                              height: 112,
-                                            ),
-                                    ),
-                                  ),
-                        ),
-                      ),
+                  child: Text(
+                    'Olá, $nome!',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.title,
                     ),
-                      const SizedBox(height: 14),
-                      const Text(
-                        "Olá!",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.title,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        "Gerencie suas informações e preferências",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.subtitle,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
 
-                const SizedBox(height: 36),
+                const SizedBox(height: 28),
 
                 const Text(
-                  "Minha conta",
+                  'Minha conta',
                   style: TextStyle(
-                    fontSize: 17,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.title,
                   ),
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
 
-                _OpcaoPerfil(
+                _buildOpcao(
                   icone: Icons.person_outline,
-                  titulo: "Editar informações",
-                  subtitulo: "Atualize seus dados pessoais",
-                  aoTocar: () {},
+                  titulo: 'Editar informações',
+                  descricao: 'Atualize seu nome',
+                  onTap: _editarInformacoes,
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 22),
 
                 const Text(
-                  "Preferências",
+                  'Preferências',
                   style: TextStyle(
-                    fontSize: 17,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.title,
                   ),
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
 
-                _OpcaoPerfil(
+                _buildOpcao(
                   icone: Icons.palette_outlined,
-                  titulo: "Aparência",
-                  subtitulo: "Personalize o visual do aplicativo",
-                  aoTocar: () {},
+                  titulo: 'Aparência',
+                  descricao: 'Escolha entre tema claro e escuro',
+                  onTap: _abrirAparencia,
                 ),
 
-                const SizedBox(height: 12),
-
-                _OpcaoPerfil(
+                _buildOpcao(
                   icone: Icons.lock_outline,
-                  titulo: "Privacidade e segurança",
-                  subtitulo: "Cuide da segurança da sua conta",
-                  aoTocar: () {},
+                  titulo: 'Privacidade e segurança',
+                  descricao: 'Gerencie as informações da sua conta',
+                  onTap: _abrirPrivacidade,
                 ),
 
-                const SizedBox(height: 12),
-
-                _OpcaoPerfil(
+                _buildOpcao(
                   icone: Icons.help_outline,
-                  titulo: "Ajuda e suporte",
-                  subtitulo: "Encontre ajuda para utilizar o AURA",
-                  aoTocar: () {},
+                  titulo: 'Ajuda e suporte',
                 ),
-                const SizedBox(height: 32),
 
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () => _sairDaConta(context),
-                        icon: const Icon(Icons.logout),
-                        label: const Text("Sair da conta"),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primaryDark,
-                          side: const BorderSide(color: AppColors.primary),
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                const SizedBox(height: 24),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _saindo
+                        ? null
+                        : () => _sairDaConta(context),
+                    icon: _saindo
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.logout,
+                            color: Colors.redAccent,
                           ),
-                        ),
+                    label: Text(
+                      _saindo ? 'Saindo...' : 'Sair da conta',
+                      style: const TextStyle(
+                        color: Colors.redAccent,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-
-                    const SizedBox(height: 24),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: BorderSide(
+                        color: Colors.redAccent.withValues(alpha: 0.5),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _OpcaoPerfil extends StatelessWidget {
-  final IconData icone;
-  final String titulo;
-  final String subtitulo;
-  final VoidCallback aoTocar;
-
-  const _OpcaoPerfil({
-    required this.icone,
-    required this.titulo,
-    required this.subtitulo,
-    required this.aoTocar,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.fieldBorder),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: ListTile(
-        onTap: aoTocar,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 6,
-        ),
-        leading: Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: AppColors.field,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Icon(
-            icone,
-            color: AppColors.primaryDark,
-          ),
-        ),
-        title: Text(
-          titulo,
-          style: const TextStyle(
-            color: AppColors.title,
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-        ),
-        subtitle: Text(
-          subtitulo,
-          style: const TextStyle(
-            color: AppColors.subtitle,
-            fontSize: 11,
-          ),
-        ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          size: 15,
-          color: AppColors.subtitle,
         ),
       ),
     );

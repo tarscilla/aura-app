@@ -20,9 +20,11 @@ class AuthGate extends StatelessWidget {
         }
 
         if (snapshot.hasData) {
+          debugPrint("AUTHGATE: USUÁRIO LOGADO");
           return const PerfilPrompt(child: MainShell());
         }
 
+        debugPrint("AUTHGATE: USUÁRIO DESCONECTADO");
         return const LoginPage();
       },
     );

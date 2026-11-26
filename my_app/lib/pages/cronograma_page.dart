@@ -6,6 +6,7 @@ import '../widgets/calendario_widget.dart';
 import '../widgets/tratamento_card.dart';
 import '../theme/app_colors.dart';
 import '../widgets/aura_background.dart';
+import "perfil_page.dart";
 
 
 class CronogramaPage extends StatelessWidget {
@@ -69,19 +70,42 @@ class _CronogramaConteudo extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      onPressed: () {},
-                      icon: const Icon(
-                        Icons.person_outline,
-                        color: rosa,
-                      ),
-                    ),
-                  ),
+                  MouseRegion(
+  cursor: SystemMouseCursors.click,
+  child: GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const PerfilPage(),
+        ),
+      );
+    },
+    child: Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.field,
+        border: Border.all(
+          color: AppColors.primary,
+          width: 1.5,
+        ),
+      ),
+      child: ClipOval(
+        child: Image.asset(
+          "assets/images/avatar.png",
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => const Icon(
+            Icons.person,
+            size: 30,
+            color: AppColors.primaryDark,
+          ),
+        ),
+      ),
+    ),
+  ),
+),
                 ],
               ),
 
@@ -125,20 +149,32 @@ class _CronogramaConteudo extends StatelessWidget {
 
               const SizedBox(height: 14),
 
-              if (viewModel.tratamentosDoDia.isEmpty)
-                _mensagemVazia(
-                  'Nenhum tratamento programado para este dia.',
-                  Icons.spa_outlined,
-                )
-              else
-                ...viewModel.tratamentosDoDia.map(
-                  (tratamento) => TratamentoCard(
-                    tratamento: tratamento,
-                    onToggle: () {
-                      viewModel.alternarConclusao(tratamento);
-                    },
-                  ),
-                ),
+              if (viewModel.carregando)
+  const Center(
+    child: Padding(
+      padding: EdgeInsets.all(20),
+      child: CircularProgressIndicator(),
+    ),
+  )
+else if (viewModel.erro != null)
+  _mensagemVazia(
+    viewModel.erro!,
+    Icons.error_outline,
+  )
+else if (viewModel.tratamentosDoDia.isEmpty)
+  _mensagemVazia(
+    'Nenhum tratamento programado para este dia.',
+    Icons.spa_outlined,
+  )
+else
+  ...viewModel.tratamentosDoDia.map(
+    (tratamento) => TratamentoCard(
+      tratamento: tratamento,
+      onToggle: () {
+        viewModel.alternarConclusao(tratamento);
+      },
+    ),
+  ),
 
               const SizedBox(height: 15),
 
