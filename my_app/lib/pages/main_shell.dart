@@ -1,4 +1,6 @@
 import "package:flutter/material.dart";
+import "package:my_app/pages/ciclo_page.dart";
+
 import "../widgets/aura_bottom_nav.dart";
 import "home_page.dart";
 import "cronograma_page.dart";
@@ -25,7 +27,7 @@ class _MainShellState extends State<MainShell> {
   List<Widget> get _paginas => [
         HomePage(aoIrParaAba: _irParaAba),
         CronogramaPage(),
-        const _EmConstrucao("Ciclo menstrual"),
+        const CicloPage(),
         const _EmConstrucao("Rotinas"),
         const ProgressPage(),
       ];
