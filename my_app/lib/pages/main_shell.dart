@@ -3,6 +3,7 @@ import "../widgets/aura_bottom_nav.dart";
 import "home_page.dart";
 import "cronograma_page.dart";
 import "progress_page.dart";
+import "rotinas_page.dart";
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -26,7 +27,7 @@ class _MainShellState extends State<MainShell> {
         HomePage(aoIrParaAba: _irParaAba),
         CronogramaPage(),
         const _EmConstrucao("Ciclo menstrual"),
-        const _EmConstrucao("Rotinas"),
+        const RotinasPage(),
         const ProgressPage(),
       ];
 
