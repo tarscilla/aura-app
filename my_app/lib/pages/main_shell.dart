@@ -5,6 +5,7 @@ import "../widgets/aura_bottom_nav.dart";
 import "home_page.dart";
 import "cronograma_page.dart";
 import "progress_page.dart";
+import "rotinas_page.dart";
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -28,7 +29,7 @@ class _MainShellState extends State<MainShell> {
         HomePage(aoIrParaAba: _irParaAba),
         CronogramaPage(),
         const CicloPage(),
-        const _EmConstrucao("Rotinas"),
+        const RotinasPage(),
         const ProgressPage(),
       ];
 
@@ -42,21 +43,6 @@ class _MainShellState extends State<MainShell> {
       bottomNavigationBar: AuraBottomNav(
         indice: _indice,
         aoSelecionar: _irParaAba,
-      ),
-    );
-  }
-}
-
-class _EmConstrucao extends StatelessWidget {
-  final String titulo;
-
-  const _EmConstrucao(this.titulo);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text("$titulo — em construção"),
       ),
     );
   }
